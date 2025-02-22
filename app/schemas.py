@@ -12,7 +12,9 @@ class UserBase(BaseModel):
 
 class UserCreate(BaseModel):
     username: str
+    email: str 
     password: str
+
 
 class UserLogin(BaseModel):
     username: str
@@ -37,3 +39,6 @@ class UserAdminUpdate(BaseModel):
 
 class ProgressData(BaseModel):
     progress_report: str  
+
+class ChangeUsername(BaseModel):
+    new_username: str

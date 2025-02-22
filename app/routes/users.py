@@ -1,62 +1,41 @@
 import random
-from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+import os, io
+import config, json
 import pandas as pd
-from sqlalchemy.orm import Session
-from fastapi.security import OAuth2PasswordRequestForm
+from PIL import Image
 from typing import List
 import google.generativeai as genai
-from app import schemas, models, auth, database  
+
+from app import schemas
 from app.schemas import *
-import config, json
+from app.routes.utils.utils import * 
+from fastapi import APIRouter, UploadFile, File
+from fastapi.responses import JSONResponse
+from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
-
 genai.configure(api_key=config.GOOGLE_API_KEY)
 
-
-def get_db():
-    db = database.SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    payload = auth.decode_token(token)
-    if not payload:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+@router.put("/change-username", response_model=schemas.UserBase)
+def change_username(
+    update: schemas.ChangeUsername,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     
-    userid = payload.get("userid")
-    if not userid:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token: Missing user ID",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    existing_user = db.query(models.User).filter(
+    models.User.username == update.new_username,
+    models.User.userid != current_user.userid
+    ).first()
 
-    db_user = db.query(models.User).filter(models.User.userid == userid).first()
-    if not db_user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    return db_user
-
-def require_sudo(current_user: models.User = Depends(get_current_user)):
-    if not current_user.is_sudo:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied: Admins only"
-        )
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Username unavailable")
+    
+    current_user.username = update.new_username
+    db.commit()
+    db.refresh(current_user)
     return current_user
 
 @router.post("/signup", response_model=schemas.UserBase)
@@ -69,8 +48,9 @@ def signup(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
     new_user = models.User(
         username=user.username,
+        email=user.email,  
         hashed_password=hashed_password,
-        userid=random.randint(100000, 999999) 
+        userid=random.randint(100000, 999999)
     )
     db.add(new_user)
     db.commit()
@@ -110,9 +90,6 @@ def refresh_token(token: str):
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    # Optionally, you might also check that the token is indeed a refresh token
-    # (for example, by adding a "type": "refresh" field when creating it)
-
     new_access_token = auth.create_access_token(
         data={
             "sub": payload.get("sub"),
@@ -121,8 +98,6 @@ def refresh_token(token: str):
         }
     )
     return {"access_token": new_access_token, "token_type": "bearer"}
-
-
 
 @router.get("/recent-imports")
 def get_recent_imports(
@@ -133,28 +108,35 @@ def get_recent_imports(
         db.query(models.RecentImport)
         .filter(models.RecentImport.user_id == current_user.userid)
         .order_by(models.RecentImport.created_at.desc())
-        .all()  # Fetch all records
+        .all()  
     )
 
     if not recent_imports:
         return []
-
-    return [
+    
+    response_data = [
         {
             "chart_data": json.loads(import_entry.chart_data),
-            "prediction": import_entry.prediction,  # Include the generated AI text
+            "prediction": import_entry.prediction,  
             "created_at": import_entry.created_at.isoformat(),
         }
         for import_entry in recent_imports
     ]
+    
+    sanitized_response = sanitize_nans(response_data)
+    return JSONResponse(content=sanitized_response)
 
 
 @router.get("/protected")
 def protected_route(current_user: models.User = Depends(get_current_user)):
     return {
-        "message": f"Welcome, {current_user.username}!",
+        "username": current_user.username,
+        "email": current_user.email,
+        "joined_date": current_user.joined_date.isoformat(),
         "userid": current_user.userid,
-        "is_sudo": current_user.is_sudo
+        "profile_pic": current_user.profile_pic,
+        "is_sudo": current_user.is_sudo,
+        "role": "Admin" if current_user.is_sudo else "Regular"
     }
 
 @router.get("/admin")
@@ -183,7 +165,6 @@ def change_password(
 def get_all_users(current_user: models.User = Depends(require_sudo), db: Session = Depends(get_db)):
     return db.query(models.User).all()
 
-
 @router.put("/admin-panel", response_model=schemas.UserBase)
 def admin_panel_update(
     update: schemas.UserAdminUpdate,
@@ -204,7 +185,6 @@ def admin_panel_update(
     db.refresh(target_user)
     return target_user
 
-
 @router.delete("/admin-panel/{userid}", response_model=schemas.UserBase)
 def delete_user(userid: int, current_user: models.User = Depends(require_sudo), db: Session = Depends(get_db)):
     target_user = db.query(models.User).filter(models.User.userid == userid).first()
@@ -215,22 +195,6 @@ def delete_user(userid: int, current_user: models.User = Depends(require_sudo), 
     db.commit()
     return target_user
 
-genai.configure(api_key=config.GOOGLE_API_KEY)
-
-generation_config = {
-    "temperature": 0.7,
-    "top_p": 0.95,
-    "top_k": 64,
-    "max_output_tokens": 65536,
-    "response_mime_type": "text/plain",
-}
-
-model = genai.GenerativeModel(
-    model_name="gemini-2.0-flash-thinking-exp-01-21",
-    generation_config=generation_config,
-)
-
-
 @router.post("/predict", response_model=dict)
 async def predict_completion(
     file: UploadFile = File(...),
@@ -238,7 +202,7 @@ async def predict_completion(
     db: Session = Depends(get_db)
 ):
     try:
-        # Read CSV
+        
         df = pd.read_csv(file.file)
         print("CSV Columns:", df.columns.tolist())
         df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
@@ -249,7 +213,6 @@ async def predict_completion(
         if "planned_progress" not in df.columns:
             df["planned_progress"] = (df["days_elapsed"] / (df["days_elapsed"] + df["days_remaining"])) * 100
 
-        # Extract only required columns for chart data.
         required_columns = ["days_elapsed", "planned_progress", "actual_progress"]
         missing_columns = [col for col in required_columns if col not in df.columns]
         if missing_columns:
@@ -259,17 +222,19 @@ async def predict_completion(
         progress_summary = df.to_string()
 
         prompt = [
-            "You are an AI-powered construction assistant. Get the insights and forecast based on the data with current trends in only 7 lines.",
+            "You are an AI-powered construction assistant.", 
+            f"Get the insights and forecast based on the data with current trends in real-time", 
+            f"make it 10 lines with points wise in new line for each point.",
             f"Input data:\n{progress_summary}",
         ]
         if model is None:
             raise HTTPException(status_code=500, detail="AI model not initialized.")
         ai_response = model.generate_content(prompt)
 
-        # Save recent import record.
+    
         recent = models.RecentImport(
             user_id=current_user.userid,
-            prediction=ai_response.text,  # Optional: store AI response.
+            prediction=ai_response.text,  
             chart_data=json.dumps(extracted_data)
         )
         db.add(recent)
@@ -288,21 +253,11 @@ async def import_csv(
     current_user: models.User = Depends(require_sudo),
     db: Session = Depends(get_db)
 ):
-    """
-    Endpoint to import construction CSV data.
-    Expected CSV format:
-      project_id,progress_percent,materials_used,workforce,days_elapsed,days_remaining
-    """
     try:
-        
         df = pd.read_csv(file.file)
-
-        
         expected_columns = {"project_id", "progress_percent", "materials_used", "workforce", "days_elapsed", "days_remaining"}
         if not expected_columns.issubset(set(df.columns)):
             raise HTTPException(status_code=400, detail="CSV format is invalid. Expected columns: " + ", ".join(expected_columns))
-        
-        
         
         preview = df.head().to_dict(orient="records")
         return {
@@ -313,3 +268,50 @@ async def import_csv(
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/upload-profile-pic")
+async def upload_profile_pic(
+    profile_pic: UploadFile = File(...),
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not profile_pic.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Invalid file type. Only image files are allowed.")
+    
+    file_extension = os.path.splitext(profile_pic.filename)[1]
+    file_name = f"profile_pic_{current_user.userid}.jpg"
+    
+    upload_folder = os.path.join("static", "profile_pics")
+    os.makedirs(upload_folder, exist_ok=True)
+    file_path = os.path.join(upload_folder, file_name)
+
+    if os.path.exists(file_path):
+        os.remove(file_path)
+    
+    content = await profile_pic.read()
+
+    try:
+        image = Image.open(io.BytesIO(content))
+    except Exception:
+        raise HTTPException(status_code=400, detail="Unable to open image.")
+
+    if image.mode != "RGB":
+        image = image.convert("RGB")
+    
+    image.thumbnail((200, 200))
+    
+    buffer = io.BytesIO()
+    image.save(buffer, format="JPEG", quality=70)
+    buffer.seek(0)
+    
+    with open(file_path, "wb") as f:
+        f.write(buffer.getvalue())
+    
+    backend_url = config.PORT
+    profile_pic_url = f"{backend_url}/static/profile_pics/{file_name}"
+    
+    current_user.profile_pic = profile_pic_url
+    db.commit()
+    db.refresh(current_user)
+
+    return {"profile_pic": profile_pic_url}
