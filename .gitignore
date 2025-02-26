@@ -1,0 +1,11 @@
+track.db
+.env
+config.py
+
+
+
+node_modules/
+static/
+__pycache__/
+dist/
+.venv/

@@ -11,8 +11,11 @@ import {
   IconButton,
   CircularProgress,
   Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
-
 import React, { useState, useEffect, ChangeEvent } from 'react';
 import { CameraAlt, LockReset, Logout } from '@mui/icons-material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -24,6 +27,7 @@ const Profile: React.FC = () => {
   const [profilePicFile, setProfilePicFile] = useState<File | null>(null);
   const [uploadPicError, setUploadPicError] = useState<string>('');
   const [uploadPicSuccess, setUploadPicSuccess] = useState<string>('');
+  const [uploadDialogOpen, setUploadDialogOpen] = useState<boolean>(false);
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [newUsername, setNewUsername] = useState<string>('');
@@ -47,7 +51,7 @@ const Profile: React.FC = () => {
           setProfilePic(response.data.profile_pic);
         }
       } catch (err) {
-        console.error('fetching profile err:', err);
+        console.error('Fetching profile error:', err);
       } finally {
         setLoading(false);
       }
@@ -66,13 +70,17 @@ const Profile: React.FC = () => {
       setProfilePic(URL.createObjectURL(file));
       setUploadPicError('');
       setUploadPicSuccess('');
+      setUploadDialogOpen(true);
     }
   };
 
   const handleProfilePicUpload = async () => {
     if (!profilePicFile) return;
     const token = localStorage.getItem('token');
-    if (!token) return navigate('/');
+    if (!token) {
+      navigate('/');
+      return;
+    }
     try {
       const formData = new FormData();
       formData.append('profile_pic', profilePicFile);
@@ -80,10 +88,18 @@ const Profile: React.FC = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUploadPicSuccess('Profile picture updated successfully');
+      setUploadDialogOpen(false);
       setTimeout(() => setUploadPicSuccess(''), 3000);
     } catch (err: any) {
       setUploadPicError(err.response?.data.detail || 'Upload failed');
+      setUploadDialogOpen(false);
     }
+  };
+
+  const cancelProfilePicUpload = () => {
+    setProfilePicFile(null);
+    setProfilePic(data?.profile_pic || '/static/images/avatar/1.jpg');
+    setUploadDialogOpen(false);
   };
 
   const handleChangeUsername = async () => {
@@ -130,7 +146,7 @@ const Profile: React.FC = () => {
         maxWidth: 800,
         mx: { xs: 2, md: 'auto' },
         mt: 4,
-        mb: { xs: 4, md: 8 },      
+        mb: { xs: 4, md: 8 },
         px: { xs: 2, md: 3 },
         p: 3,
         position: 'relative',
@@ -197,23 +213,18 @@ const Profile: React.FC = () => {
             </Grid>
           </Grid>
 
-          <Divider sx={{ width: '100%', mb: 3 }} />
-
-          <Box sx={{ width: '100%', maxWidth: 400, mb: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Update Profile Picture
-            </Typography>
-            <Button variant="contained" component="label" fullWidth>
-              Choose New Picture
-              <input type="file" hidden accept="image/*" onChange={handleProfilePicChange} />
-            </Button>
-            {profilePicFile && (
-              <Button variant="outlined" onClick={handleProfilePicUpload} fullWidth sx={{ mt: 1 }}>
-                Upload Picture
+          <Dialog open={uploadDialogOpen} onClose={cancelProfilePicUpload}>
+            <DialogTitle>Confirm Profile Picture Upload</DialogTitle>
+            <DialogContent>
+              <Typography>Are you sure you want to upload this new profile picture?</Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={cancelProfilePicUpload}>Cancel</Button>
+              <Button onClick={handleProfilePicUpload} color="primary">
+                Upload
               </Button>
-            )}
-            {uploadPicError && <Alert severity="error" sx={{ mt: 1 }}>{uploadPicError}</Alert>}
-          </Box>
+            </DialogActions>
+          </Dialog>
 
           <Divider sx={{ width: '100%', mb: 3 }} />
 
