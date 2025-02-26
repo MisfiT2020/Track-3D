@@ -1,7 +1,7 @@
 track.db
 .env
 config.py
-
+log.txt
 
 
 node_modules/
