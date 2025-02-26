@@ -30,7 +30,6 @@ interface User {
   is_sudo: boolean;
 }
 
-
 const AdminPanel: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -40,6 +39,8 @@ const AdminPanel: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [updateError, setUpdateError] = useState<string>('');
   const [updateLoading, setUpdateLoading] = useState<boolean>(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
   const navigate = useNavigate();
 
@@ -113,28 +114,41 @@ const AdminPanel: React.FC = () => {
     }
   };
 
-  const handleDelete = async (userid: number) => {
+  // Instead of immediate deletion, open the confirmation dialog.
+  const handleDeleteClick = (user: User) => {
+    setUserToDelete(user);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!userToDelete) return;
     const token = localStorage.getItem('token');
     if (!token) {
       navigate('/');
       return;
     }
     try {
-      await axios.delete(`/admin-panel/${userid}`, {
+      await axios.delete(`/admin-panel/${userToDelete.userid}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchUsers();
     } catch (error: any) {
       if (error.response && error.response.status === 401) {
         navigate('/');
-      } else {
       }
+    } finally {
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
     }
+  };
+
+  const cancelDelete = () => {
+    setDeleteDialogOpen(false);
+    setUserToDelete(null);
   };
 
   return (
     <Container sx={{ mt: 4 }}>
-      {/* Back button */}
       <Box
         sx={{
           position: 'fixed',
@@ -156,7 +170,6 @@ const AdminPanel: React.FC = () => {
         Manage Users
       </Typography>
 
-      {/* Loading and error states */}
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
           <CircularProgress />
@@ -192,7 +205,7 @@ const AdminPanel: React.FC = () => {
                     variant="outlined"
                     color="error"
                     size="small"
-                    onClick={() => handleDelete(user.userid)}
+                    onClick={() => handleDeleteClick(user)}
                   >
                     Delete
                   </Button>
@@ -203,7 +216,6 @@ const AdminPanel: React.FC = () => {
         </Table>
       )}
 
-      {/* Update user dialog */}
       {selectedUser && (
         <Dialog open={Boolean(selectedUser)} onClose={() => setSelectedUser(null)}>
           <DialogTitle>Update User: {selectedUser.username}</DialogTitle>
@@ -235,6 +247,22 @@ const AdminPanel: React.FC = () => {
           </DialogActions>
         </Dialog>
       )}
+
+      <Dialog open={deleteDialogOpen} onClose={cancelDelete}>
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete{' '}
+            {userToDelete ? userToDelete.username : ''}?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={cancelDelete}>Cancel</Button>
+          <Button onClick={confirmDelete} color="primary">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

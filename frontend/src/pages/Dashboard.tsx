@@ -135,9 +135,37 @@ const Dashboard: React.FC = () => {
   const [csvImportStage, setCsvImportStage] = useState<string>('');
   const [sessionExpired, setSessionExpired] = useSessionExpired();
 
-  // New state for logout confirmation
   const [logoutDialogOpen, setLogoutDialogOpen] = useState<boolean>(false);
 
+  const [auditLogs, setAuditLogs] = useState<string[]>([]);
+  const [auditDialogOpen, setAuditDialogOpen] = useState<boolean>(false);
+
+  const [onlineUsers, setOnlineUsers] = useState<number>(0);
+
+
+  const handleAuditLogsClick = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch('/logs', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const logs = await response.json();
+        setAuditLogs(logs);
+        setAuditDialogOpen(true);
+      } else {
+        console.error('Error fetching audit logs:', response.status);
+      }
+    } catch (error) {
+      console.error('Error fetching audit logs:', error);
+    }
+  };
+  
+  
   const handleLogoutClick = () => {
     setLogoutDialogOpen(true);
   };
@@ -157,6 +185,27 @@ const Dashboard: React.FC = () => {
   const handleProfile = () => {
     navigate('/profile');
   };
+
+
+  useEffect(() => {
+    const fetchOnlineCount = async () => {
+      try {
+        const response = await fetch('/online-users', {
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const result = await response.json();
+        setOnlineUsers(result.online_users_count);
+      } catch (error) {
+        console.error("Error fetching online users count:", error);
+      }
+    };
+  
+    const interval = setInterval(fetchOnlineCount, 30000);
+    fetchOnlineCount();
+  
+    return () => clearInterval(interval);
+  }, []);
+  
 
   useEffect(() => {
     const loadProtectedData = async () => {
@@ -413,96 +462,101 @@ const Dashboard: React.FC = () => {
 
             {data.is_sudo && (
               <Card
-                sx={{
-                  maxWidth: 400,
-                  p: 2,
-                  animation: `${popup} 0.5s ease-out`,
-                  background: 'linear-gradient(135deg, rgba(103,58,183,0.1) 0%, rgba(81,45,168,0.15) 100%)',
-                  border: '1px solid rgba(103,58,183,0.2)',
-                  position: 'relative',
-                  overflow: 'visible',
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: '0 8px 24px rgba(103,58,183,0.2)'
-                  }
-                }}
-              >
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: -12,
-                    right: -12,
-                    bgcolor: 'rgba(103,58,183,0.9)',
-                    width: 48,
-                    height: 48,
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                  }}
-                >
-                  <SecurityIcon sx={{ color: 'white', fontSize: 28 }} />
-                </Box>
-                <CardContent>
-                  <Typography
-                    variant="h5"
-                    gutterBottom
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1.5,
-                      color: 'primary.main',
-                      fontWeight: 600,
-                      mb: 3
-                    }}
-                  >
-                    Admin Dashboard
-                  </Typography>
-                  <Box
-                    sx={{
-                      display: 'grid',
-                      gridTemplateColumns: '1fr',
-                      gap: 2,
-                      mb: 3
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        p: 1.5,
-                        borderRadius: 1,
-                        bgcolor: 'rgba(103,58,183,0.05)',
-                        border: '1px solid rgba(103,58,183,0.1)'
-                      }}
-                    >
-                      <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
-                        Total Users
-                      </Typography>
-                      <Typography variant="h4" sx={{ color: 'secondary.main' }}>
-                        {totalUsers}
-                      </Typography>
-                    </Box>
-                  </Box>
-                  <Button
-                    onClick={() => navigate('/sudo-panel')}
-                    variant="contained"
-                    fullWidth
-                    sx={{
-                      bgcolor: 'secondary.main',
-                      fontWeight: 600,
-                      py: 1.5,
-                      '&:hover': {
-                        bgcolor: 'secondary.dark',
-                        transform: 'translateY(-1px)'
-                      }
-                    }}
-                    startIcon={<SecurityIcon />}
-                  >
-                    Manage User Permissions
-                  </Button>
-                </CardContent>
-              </Card>
+  sx={{
+    maxWidth: 400,
+    p: 2,
+    animation: `${popup} 0.5s ease-out`,
+    background: 'white',
+    border: '1px solid #e0e0e0',
+    position: 'relative',
+    overflow: 'visible',
+    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+    '&:hover': {
+      transform: 'translateY(-4px)',
+      boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+    },
+  }}
+>
+  <Box
+    sx={{
+      position: 'absolute',
+      top: -12,
+      right: -12,
+      bgcolor: 'rgba(103,58,183,0.9)',
+      width: 48,
+      height: 48,
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+    }}
+  >
+    <SecurityIcon sx={{ color: 'white', fontSize: 28 }} />
+  </Box>
+  <CardContent>
+    <Typography
+      variant="h5"
+      gutterBottom
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.5,
+        color: 'primary.main',
+        fontWeight: 600,
+        mb: 3,
+      }}
+    >
+      Admin Dashboard
+    </Typography>
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: '1fr',
+        gap: 2,
+        mb: 3,
+      }}
+    >
+      <Box
+        sx={{
+          p: 1.5,
+          borderRadius: 1,
+          bgcolor: '#f5f5f5',
+          border: '1px solid #e0e0e0',
+        }}
+      >
+        <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
+          Total Users
+        </Typography>
+        <Typography variant="h4" sx={{ color: 'secondary.main' }}>
+          {totalUsers}
+          <Typography variant="body1">Online Users: {onlineUsers}</Typography>
+
+        </Typography>
+      </Box>
+    </Box>
+
+    <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+      <Button
+        onClick={() => navigate('/sudo-panel')}
+        variant="contained"
+        fullWidth
+        startIcon={<SecurityIcon />}
+      >
+        Users
+      </Button>
+      <Button
+        onClick={handleAuditLogsClick}
+        variant="outlined"
+        fullWidth
+        startIcon={<HistoryIcon />}
+      >
+        Audit Logs
+      </Button>
+    </Box>
+  </CardContent>
+</Card>
+
             )}
 
             <Card sx={{ maxWidth: 400, p: 2, animation: `${popup} 0.5s ease-out` }}>
@@ -695,19 +749,48 @@ const Dashboard: React.FC = () => {
         )}
       </Container>
 
+      <Dialog
+  open={auditDialogOpen}
+  onClose={() => setAuditDialogOpen(false)}
+  maxWidth="md"
+  fullWidth
+>
+  <DialogTitle>Audit Logs</DialogTitle>
+  <DialogContent dividers>
+    {auditLogs.length > 0 ? (
+      <Box
+        component="pre"
+        sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}
+      >
+        {auditLogs.join('\n')}
+      </Box>
+    ) : (
+      <Typography>No audit logs available.</Typography>
+    )}
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setAuditDialogOpen(false)}>Close</Button>
+  </DialogActions>
+</Dialog>
+
+
       <Dialog open={sessionExpired} onClose={() => setSessionExpired(false)}>
         <DialogTitle>Session Expired</DialogTitle>
         <DialogContent>Your session has expired. Please log in again.</DialogContent>
         <DialogActions>
-          <Button
-            onClick={() => {
-              setSessionExpired(false);
-              navigate('/');
-            }}
-            color="primary"
-          >
-            Login Again
-          </Button>
+        <Button
+          onClick={() => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userid');
+            localStorage.removeItem('is_sudo');
+            setSessionExpired(false);
+            navigate('/');
+          }}
+          color="primary"
+        >
+          Login Again
+        </Button>
+        
         </DialogActions>
       </Dialog>
 

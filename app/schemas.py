@@ -1,4 +1,3 @@
-
 from pydantic import BaseModel
 from typing import Optional
 
@@ -8,13 +7,12 @@ class UserBase(BaseModel):
     is_sudo: bool  
 
     class Config:
-        orm_mode = True
+        from_attributes = True 
 
 class UserCreate(BaseModel):
     username: str
     email: str 
     password: str
-
 
 class UserLogin(BaseModel):
     username: str

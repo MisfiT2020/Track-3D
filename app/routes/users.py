@@ -9,10 +9,11 @@ import google.generativeai as genai
 from app import schemas
 from app.schemas import *
 from app.routes.utils.utils import * 
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+from fastapi import HTTPException, status
 
 router = APIRouter()
 
@@ -315,3 +316,30 @@ async def upload_profile_pic(
     db.refresh(current_user)
 
     return {"profile_pic": profile_pic_url}
+
+
+@router.get("/logs", response_model=List[str])
+def get_logs(
+    current_user: models.User = Depends(get_current_user)
+):
+    log_path = "log.txt"
+    
+    if not os.path.exists(log_path):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Log file not found"
+        )
+    
+    try:
+        with open(log_path, "r") as log_file:
+            logs = log_file.readlines()[::-1]
+            
+            cleaned_logs = [line.strip() for line in logs if line.strip()]
+            
+        return cleaned_logs
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error reading log file: {str(e)}"
+        )
