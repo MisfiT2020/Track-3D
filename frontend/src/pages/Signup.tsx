@@ -23,10 +23,12 @@ const Signup: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
+  // Redirect if already logged in
   useEffect(() => {
     if (localStorage.getItem('token')) {
       navigate('/dashboard');
@@ -41,13 +43,34 @@ const Signup: React.FC = () => {
     setShowConfirmPassword((prev) => !prev);
   };
 
+  // Check password meets requirements:
+  // Minimum 8 characters, includes uppercase, lowercase, digit, and symbol.
+  const isPasswordValid = (password: string) => {
+    return (
+      password.length >= 8 &&
+      /[A-Z]/.test(password) &&
+      /[a-z]/.test(password) &&
+      /[0-9]/.test(password) &&
+      /[^A-Za-z0-9]/.test(password)
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitAttempted(true);
     setIsSubmitting(true);
     setError('');
 
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (!isPasswordValid(password)) {
+      setError(
+        'Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a symbol.'
+      );
       setIsSubmitting(false);
       return;
     }
@@ -120,6 +143,12 @@ const Signup: React.FC = () => {
               ),
             }}
           />
+          {/* Conditionally show the password requirements after signup is attempted */}
+          {submitAttempted && !isPasswordValid(password) && (
+            <Typography variant="caption" color="error">
+              Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a symbol.
+            </Typography>
+          )}
           <TextField
             label="Confirm Password"
             type={showConfirmPassword ? 'text' : 'password'}

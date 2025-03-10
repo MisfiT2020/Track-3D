@@ -109,46 +109,31 @@ const ImportReport: React.FC = () => {
 
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [progressMessage, setProgressMessage] = useState<string>("Fetching CSV data...");
   const [showResults, setShowResults] = useState<boolean>(false);
 
   useEffect(() => {
-    const timer1 = setTimeout(() => {
-      setProgressMessage("Generating insights...");
-    }, 2000);
-    const timer2 = setTimeout(() => {
-      setProgressMessage("Wrapping up...");
-    }, 4000);
-    const timer3 = setTimeout(() => {
-      Papa.parse(csvData, {
-        header: true,
-        dynamicTyping: true,
-        complete: (results: any) => {
-          const projectsData: ProjectData[] = results.data.map((row: any) => ({
-            project_id: row.project_id,
-            progress_percent: row.progress_percent,
-            materials_used: row.materials_used,
-            workforce: row.workforce,
-            days_elapsed: row.days_elapsed,
-            days_remaining: row.days_remaining,
-          }));
-          setProjects(projectsData);
-          setLoading(false);
-          setProgressMessage("");
-          setShowResults(true);
-        },
-        error: (error: any) => {
-          console.error('parsing CSV err:', error);
-          setLoading(false);
-        },
-      });
-    }, 6000);
-
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-    };
+    // Parse the CSV immediately without delay
+    Papa.parse(csvData, {
+      header: true,
+      dynamicTyping: true,
+      complete: (results: any) => {
+        const projectsData: ProjectData[] = results.data.map((row: any) => ({
+          project_id: row.project_id,
+          progress_percent: row.progress_percent,
+          materials_used: row.materials_used,
+          workforce: row.workforce,
+          days_elapsed: row.days_elapsed,
+          days_remaining: row.days_remaining,
+        }));
+        setProjects(projectsData);
+        setLoading(false);
+        setShowResults(true);
+      },
+      error: (error: any) => {
+        console.error('Parsing CSV error:', error);
+        setLoading(false);
+      },
+    });
   }, [csvData]);
 
   return (
@@ -168,7 +153,6 @@ const ImportReport: React.FC = () => {
       {(loading || !showResults) ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '300px' }}>
           <CircularProgress sx={{ mb: 2 }} />
-          <Typography variant="h6">{progressMessage || "Processing complete..."}</Typography>
         </Box>
       ) : (
         <Box>

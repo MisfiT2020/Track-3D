@@ -9,6 +9,7 @@ import google.generativeai as genai
 from app import schemas
 from app.schemas import *
 from app.routes.utils.utils import * 
+from fastapi import Request
 from fastapi import APIRouter, UploadFile, File, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
@@ -17,7 +18,7 @@ from fastapi import HTTPException, status
 
 router = APIRouter()
 
-genai.configure(api_key=config.GOOGLE_API_KEY)
+genai.configure(api_key=config.GEMINI_API_KEY)
 
 @router.put("/change-username", response_model=schemas.UserBase)
 def change_username(
@@ -137,7 +138,7 @@ def protected_route(current_user: models.User = Depends(get_current_user)):
         "userid": current_user.userid,
         "profile_pic": current_user.profile_pic,
         "is_sudo": current_user.is_sudo,
-        "role": "Admin" if current_user.is_sudo else "Regular"
+        "role": "Admin" if current_user.is_sudo else "Member"
     }
 
 @router.get("/admin")
@@ -316,7 +317,6 @@ async def upload_profile_pic(
     db.refresh(current_user)
 
     return {"profile_pic": profile_pic_url}
-
 
 @router.get("/logs", response_model=List[str])
 def get_logs(

@@ -140,9 +140,6 @@ const Dashboard: React.FC = () => {
   const [auditLogs, setAuditLogs] = useState<string[]>([]);
   const [auditDialogOpen, setAuditDialogOpen] = useState<boolean>(false);
 
-  const [onlineUsers, setOnlineUsers] = useState<number>(0);
-
-
   const handleAuditLogsClick = async () => {
     const token = localStorage.getItem('token');
     try {
@@ -185,27 +182,6 @@ const Dashboard: React.FC = () => {
   const handleProfile = () => {
     navigate('/profile');
   };
-
-
-  useEffect(() => {
-    const fetchOnlineCount = async () => {
-      try {
-        const response = await fetch('/online-users', {
-          headers: { 'Content-Type': 'application/json' }
-        });
-        const result = await response.json();
-        setOnlineUsers(result.online_users_count);
-      } catch (error) {
-        console.error("Error fetching online users count:", error);
-      }
-    };
-  
-    const interval = setInterval(fetchOnlineCount, 30000);
-    fetchOnlineCount();
-  
-    return () => clearInterval(interval);
-  }, []);
-  
 
   useEffect(() => {
     const loadProtectedData = async () => {
@@ -447,7 +423,7 @@ const Dashboard: React.FC = () => {
                 </Typography>
                 <Typography variant="body1">User ID: {data.userid}</Typography>
                 <Typography variant="body1">
-                  User Type: {data.is_sudo ? 'Admin' : 'Regular'}
+                  User Type: {data.is_sudo ? 'Admin' : 'Member'}
                 </Typography>
                 <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2 }}>
                   <Button onClick={handleLogoutClick} variant="contained">
@@ -530,8 +506,6 @@ const Dashboard: React.FC = () => {
         </Typography>
         <Typography variant="h4" sx={{ color: 'secondary.main' }}>
           {totalUsers}
-          <Typography variant="body1">Online Users: {onlineUsers}</Typography>
-
         </Typography>
       </Box>
     </Box>

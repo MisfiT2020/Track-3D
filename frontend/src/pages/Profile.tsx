@@ -48,7 +48,7 @@ const Profile: React.FC = () => {
         });
         setData(response.data);
         if (response.data.profile_pic) {
-          setProfilePic(response.data.profile_pic);
+          setProfilePic(response.data.profile_pic + '?t=' + new Date().getTime());
         }
       } catch (err) {
         console.error('Fetching profile error:', err);
@@ -191,9 +191,10 @@ const Profile: React.FC = () => {
             </IconButton>
           </Box>
 
-          <Typography variant="h4" gutterBottom>
+          <Typography variant="h4" gutterBottom sx={{ mb: 6 }}>
             {data?.username || 'User'}
           </Typography>
+
 
           <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12} md={6}>
@@ -208,13 +209,13 @@ const Profile: React.FC = () => {
             </Grid>
             <Grid item xs={12}>
               <Typography variant="body1">
-                <strong>Role:</strong> {data?.role || 'Regular'}
+                <strong>Role:</strong> {data?.role || 'Member'}
               </Typography>
             </Grid>
           </Grid>
 
           <Dialog open={uploadDialogOpen} onClose={cancelProfilePicUpload}>
-            <DialogTitle>Confirm Profile Picture Upload</DialogTitle>
+            <DialogTitle>Profile Picture</DialogTitle>
             <DialogContent>
               <Typography>Are you sure you want to upload this new profile picture?</Typography>
             </DialogContent>
