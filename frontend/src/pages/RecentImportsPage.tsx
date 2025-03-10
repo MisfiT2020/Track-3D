@@ -85,9 +85,6 @@ const RecentImportsPage: React.FC = () => {
 
   return (
     <Container sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Recent Imports
-      </Typography>
       
       {imports.length === 0 ? (
         <Typography variant="body1">No recent imports found</Typography>

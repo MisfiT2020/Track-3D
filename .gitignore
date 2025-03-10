@@ -2,6 +2,7 @@ track.db
 .env
 config.py
 log.txt
+trackk.db
 
 
 node_modules/
