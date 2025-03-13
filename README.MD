@@ -68,7 +68,8 @@ sudo docker compose up --build
 | ![Admin Screen 5](src/dashboard.jpeg) | ![Admin Screen 4](src/dashboard2.jpeg) |
 | ![Admin Screen 4](src/manage-users.jpeg) | ![Admin Screen 6](src/update-user.jpeg) |
 | ![Admin Screen 5](src/import-csv.jpeg) | ![Admin Screen 6](src/import-csv2.jpeg) |
-| ![Admin Screen 6](src/logs.jpeg) | ![Admin Screen 6](src/recents.jpeg) |
+| ![Admin Screen 5](src/report-pdf.jpeg) | ![Admin Screen 7](src/logs.jpeg) |
+| ![Admin Screen 8](src/recents.jpeg)|
 
 
 ### USER INTERFACE
