@@ -1,14 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Papa from 'papaparse';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { 
-  Box, 
-  Container, 
-  Typography, 
-  Card, 
-  CardContent, 
-  Button, 
-  CircularProgress, 
+import html2pdf from 'html2pdf.js';
+import {
+  Box,
+  Container,
+  Typography,
+  Card,
+  CardContent,
+  Button,
+  CircularProgress,
 } from '@mui/material';
 
 import {
@@ -27,7 +28,17 @@ import {
 import ReactMarkdown from 'react-markdown';
 import { Bar } from 'react-chartjs-2';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, LineElement, PointElement, LineController);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  LineElement,
+  PointElement,
+  LineController
+);
 
 export interface ProjectData {
   project_id: number;
@@ -46,7 +57,7 @@ const ProjectProgressChart: React.FC<{ projects: ProjectData[] }> = ({ projects 
   const totalProgress = projects.reduce((sum, project) => sum + project.progress_percent, 0);
   const averageProgress = totalProgress / projects.length;
   const labels = projects.map((project) => `Project ${project.project_id}`);
-  
+
   const chartData = {
     labels,
     datasets: [
@@ -85,6 +96,7 @@ const ProjectProgressChart: React.FC<{ projects: ProjectData[] }> = ({ projects 
 const ImportReport: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const reportRef = useRef<HTMLDivElement>(null);
 
   const stateData = (location.state || {}) as { prediction?: string; csvData?: string };
   let prediction = stateData.prediction || '';
@@ -112,7 +124,6 @@ const ImportReport: React.FC = () => {
   const [showResults, setShowResults] = useState<boolean>(false);
 
   useEffect(() => {
-    // Parse the CSV immediately without delay
     Papa.parse(csvData, {
       header: true,
       dynamicTyping: true,
@@ -136,34 +147,81 @@ const ImportReport: React.FC = () => {
     });
   }, [csvData]);
 
+  const exportPDF = () => {
+    if (!reportRef.current) return;
+
+    const options = {
+      margin: 10,
+      filename: 'report.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['css', 'legacy'] },
+    };
+
+    html2pdf().from(reportRef.current).set(options).save();
+  };
+
   return (
     <Container sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Import Report
-      </Typography>
-      <Card sx={{ p: 2, mb: 4 }}>
-        <CardContent>
-          <Typography variant="h5" gutterBottom>
-            AI Generated Insights
-          </Typography>
-          <ReactMarkdown>{prediction}</ReactMarkdown>
-        </CardContent>
-      </Card>
+      <div ref={reportRef}>
+        <Typography variant="h4" gutterBottom>
+          Import Report
+        </Typography>
+        <Card sx={{ p: 2, mb: 4 }}>
+          <CardContent>
+            <Typography variant="h5" gutterBottom>
+              AI Generated Insights
+            </Typography>
+            <ReactMarkdown>{prediction}</ReactMarkdown>
+          </CardContent>
+        </Card>
 
-      {(loading || !showResults) ? (
-        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '300px' }}>
-          <CircularProgress sx={{ mb: 2 }} />
-        </Box>
-      ) : (
-        <Box>
-          <Typography variant="h5" align="center" gutterBottom>
-            Project Progress Chart
-          </Typography>
-          <ProjectProgressChart projects={projects} />
-        </Box>
-      )}
+        {(loading || !showResults) ? (
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '300px',
+            }}
+          >
+            <CircularProgress sx={{ mb: 2 }} />
+          </Box>
+        ) : (
+          // Wrap the chart in a container that forces a page break and centers content.
+          <Box
+            className="chart-page"
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              textAlign: 'center',
+              width: '100%',
+              // Optional: add margins to center the chart canvas if needed
+              mx: 'auto',
+            }}
+          >
+            <Typography variant="h5" gutterBottom>
+              Project Progress Chart
+            </Typography>
+            <ProjectProgressChart projects={projects} />
+          </Box>
+        )}
+      </div>
 
-      <Box sx={{ mt: 4, textAlign: 'center', mb: 4 }}>
+      <Box
+        sx={{
+          mt: 4,
+          mb: 4,
+          display: 'flex',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Button variant="contained" onClick={exportPDF}>
+          Export
+        </Button>
         <Button variant="contained" onClick={() => navigate('/dashboard')}>
           Back to Dashboard
         </Button>

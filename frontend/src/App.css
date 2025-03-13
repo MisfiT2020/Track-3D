@@ -9,6 +9,14 @@ html {
   text-align: center;
 }
 
+.chart-page {
+  page-break-before: always;
+  page-break-after: always;
+  break-before: page;
+  break-after: page;
+}
+
+
 .logo {
   height: 6em;
   padding: 1.5em;

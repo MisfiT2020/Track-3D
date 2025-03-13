@@ -1,5 +1,3 @@
-/* src/styles/App.css */
-
 body {
     margin: 0;
     font-family: 'Quicksand', sans-serif; 
@@ -67,3 +65,11 @@ body {
     background: #f1c40f;
     transform: scale(1.05);
 }
+
+.chart-page {
+    page-break-before: always;
+    page-break-after: always;
+    break-before: page;
+    break-after: page;
+  }
+  
