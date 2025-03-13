@@ -37,7 +37,7 @@ const ProjectProgressChart: React.FC<ProjectProgressChartProps> = ({ projects })
     datasets: [
       {
         type: 'bar' as const,
-        label: 'Actual Progress',
+        label: 'Progress Percent',
         data: projects.map((project) => project.actual_progress),
         backgroundColor: 'rgba(75, 192, 192, 0.6)',
         borderColor: 'rgba(75, 192, 192, 1)',
@@ -45,22 +45,28 @@ const ProjectProgressChart: React.FC<ProjectProgressChartProps> = ({ projects })
       },
       {
         type: 'line' as const,
-        label: 'Planned Progress',
+        label: 'Progress Trend',
         data: projects.map((project) => project.planned_progress),
-        borderColor: 'rgba(255, 99, 132, 1)',
+        borderColor: 'red',       
         borderWidth: 2,
         fill: false,
         tension: 0.1,
       },
     ],
   };
+  
   const options = {
     responsive: true,
     plugins: {
       legend: { display: false },
       title: { display: false },
     },
-    scales: { y: { beginAtZero: true, max: 100 } },
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: 100,
+      },
+    },
   };
   return <Bar data={chartData as any} options={options} />;
 };

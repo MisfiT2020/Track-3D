@@ -73,7 +73,7 @@ const Signup: React.FC = () => {
     }
 
     try {
-      await axios.post('/signup', { username, email, password });
+      await axios.post('/sign-up', { username, email, password });
       navigate('/', { state: { accountCreated: true } });
     } catch (err: any) {
       console.error(err);

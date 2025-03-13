@@ -12,33 +12,9 @@ import {
   CircularProgress,
 } from '@mui/material';
 
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  LineElement,
-  PointElement,
-  LineController,
-} from 'chart.js';
-
 import ReactMarkdown from 'react-markdown';
-import { Bar } from 'react-chartjs-2';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  LineElement,
-  PointElement,
-  LineController
-);
+import ProjectProgressChart from '../components/ProjectProgressChart';
 
 export interface ProjectData {
   project_id: number;
@@ -48,50 +24,6 @@ export interface ProjectData {
   days_elapsed: number;
   days_remaining: number;
 }
-
-const ProjectProgressChart: React.FC<{ projects: ProjectData[] }> = ({ projects }) => {
-  if (projects.length === 0) {
-    return <Typography align="center">No project data available to display chart.</Typography>;
-  }
-
-  const totalProgress = projects.reduce((sum, project) => sum + project.progress_percent, 0);
-  const averageProgress = totalProgress / projects.length;
-  const labels = projects.map((project) => `Project ${project.project_id}`);
-
-  const chartData = {
-    labels,
-    datasets: [
-      {
-        type: 'bar' as const,
-        label: 'Progress Percent',
-        data: projects.map((project) => project.progress_percent),
-        backgroundColor: 'rgba(75, 192, 192, 0.6)',
-        borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 1,
-      },
-      {
-        type: 'line' as const,
-        label: 'Average Progress',
-        data: projects.map(() => averageProgress),
-        borderColor: 'rgba(255, 99, 132, 1)',
-        borderWidth: 2,
-        fill: false,
-        tension: 0.1,
-      },
-    ],
-  };
-
-  const options = {
-    responsive: true,
-    plugins: {
-      legend: { display: false },
-      title: { display: false },
-    },
-    scales: { y: { beginAtZero: true, max: 100 } },
-  };
-
-  return <Bar data={chartData as any} options={options} />;
-};
 
 const ImportReport: React.FC = () => {
   const location = useLocation();
@@ -128,14 +60,16 @@ const ImportReport: React.FC = () => {
       header: true,
       dynamicTyping: true,
       complete: (results: any) => {
-        const projectsData: ProjectData[] = results.data.map((row: any) => ({
-          project_id: row.project_id,
-          progress_percent: row.progress_percent,
-          materials_used: row.materials_used,
-          workforce: row.workforce,
-          days_elapsed: row.days_elapsed,
-          days_remaining: row.days_remaining,
-        }));
+        const projectsData: ProjectData[] = results.data
+          .filter((row: any) => row.project_id != null)  
+          .map((row: any) => ({
+            project_id: row.project_id,
+            progress_percent: row.progress_percent,
+            materials_used: row.materials_used,
+            workforce: row.workforce,
+            days_elapsed: row.days_elapsed,
+            days_remaining: row.days_remaining,
+          }));
         setProjects(projectsData);
         setLoading(false);
         setShowResults(true);
@@ -150,17 +84,36 @@ const ImportReport: React.FC = () => {
   const exportPDF = () => {
     if (!reportRef.current) return;
 
+    const element = reportRef.current;
+    const width = element.scrollWidth;
+    const height = element.scrollHeight;
+
     const options = {
-      margin: 10,
+      margin: 0,
       filename: 'report.pdf',
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      image: { type: 'jpeg', quality: 1 },
+      html2canvas: {
+        scale: 2,
+        windowWidth: width,
+        windowHeight: height,
+        scrollX: 0,
+        scrollY: 0,
+      },
+      jsPDF: { unit: 'px', format: [width, height], orientation: 'portrait' },
       pagebreak: { mode: ['css', 'legacy'] },
     };
 
-    html2pdf().from(reportRef.current).set(options).save();
+    html2pdf().from(element).set(options).save();
   };
+
+  const chartData = projects.map((project) => {
+    const totalDays = project.days_elapsed + project.days_remaining;
+    return {
+      days_elapsed: project.days_elapsed,
+      actual_progress: project.progress_percent,
+      planned_progress: totalDays > 0 ? (project.days_elapsed / totalDays) * 100 : 0,
+    };
+  });
 
   return (
     <Container sx={{ mt: 4, mb: 4 }}>
@@ -202,9 +155,9 @@ const ImportReport: React.FC = () => {
             }}
           >
             <Typography variant="h5" gutterBottom>
-              Project Progress Chart
+              Project Progress Chart (Actual vs Planned)
             </Typography>
-            <ProjectProgressChart projects={projects} />
+            <ProjectProgressChart projects={chartData} />
           </Box>
         )}
       </div>

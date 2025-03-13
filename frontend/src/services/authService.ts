@@ -5,5 +5,5 @@ export const signupUser = async (userData: {
   email: string;
   password: string;
 }) => {
-  return axios.post('/signup', userData);
+  return axios.post('/sign-up', userData);
 };

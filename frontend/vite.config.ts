@@ -15,7 +15,7 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '^/(login|signup|protected|refresh|online-users|admin-panel|admin-panel-users|change-password|predict|import-csv|recent-imports|upload-profile-pic|change-username|logs)': {
+      '^/(login|sign-up|protected|refresh|online-users|admin-panel|admin-panel-users|change-password|predict|import-csv|recent-imports|upload-profile-pic|change-username|logs)': {
         target: 'http://localhost:8001',
         changeOrigin: true,
         secure: false,
