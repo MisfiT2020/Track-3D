@@ -143,7 +143,6 @@ const Signup: React.FC = () => {
               ),
             }}
           />
-          {/* Conditionally show the password requirements after signup is attempted */}
           {submitAttempted && !isPasswordValid(password) && (
             <Typography variant="caption" color="error">
               Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a symbol.
