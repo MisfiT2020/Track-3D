@@ -40,7 +40,7 @@ def change_username(
     db.refresh(current_user)
     return current_user
 
-@router.post("/signup", response_model=schemas.UserBase)
+@router.post("/sign-up", response_model=schemas.UserBase)
 def signup(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = db.query(models.User).filter(models.User.username == user.username).first()
     if db_user:
