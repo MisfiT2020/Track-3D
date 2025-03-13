@@ -28,7 +28,6 @@ const Signup: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
-  // Redirect if already logged in
   useEffect(() => {
     if (localStorage.getItem('token')) {
       navigate('/dashboard');
@@ -43,8 +42,6 @@ const Signup: React.FC = () => {
     setShowConfirmPassword((prev) => !prev);
   };
 
-  // Check password meets requirements:
-  // Minimum 8 characters, includes uppercase, lowercase, digit, and symbol.
   const isPasswordValid = (password: string) => {
     return (
       password.length >= 8 &&

@@ -190,7 +190,6 @@ const ImportReport: React.FC = () => {
             <CircularProgress sx={{ mb: 2 }} />
           </Box>
         ) : (
-          // Wrap the chart in a container that forces a page break and centers content.
           <Box
             className="chart-page"
             sx={{
@@ -199,7 +198,6 @@ const ImportReport: React.FC = () => {
               alignItems: 'center',
               textAlign: 'center',
               width: '100%',
-              // Optional: add margins to center the chart canvas if needed
               mx: 'auto',
             }}
           >
@@ -219,7 +217,7 @@ const ImportReport: React.FC = () => {
           justifyContent: 'space-between',
         }}
       >
-        <Button variant="contained" onClick={exportPDF}>
+        <Button variant="contained" onClick={exportPDF} sx={{ ml: 3.5 }}>
           Export
         </Button>
         <Button variant="contained" onClick={() => navigate('/dashboard')}>
