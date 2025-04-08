@@ -1,6 +1,10 @@
-# Track 3D AI - Construction Analytics Platform
+<h1 align="center"> Track 3D AI - Construction Analytics Platform </h1>
+
+<div align="center">
 
 AI-powered construction project analytics and forecasting platform.
+
+</div>
 
 ## Features
 
@@ -93,8 +97,8 @@ sudo docker compose up --build
  
 ### CLI Method 
 
-- To create a account as sudo, we need to need make the sudo account from either from
-- swagger ui or edit the database.
+- To update a account as sudo, we need to need make the sudo account from either from
+- *swagger ui* or edit the *database*.
 - To edit the database, 
 - `sqlite3 track.db` - to enter the database
 - `.tables` - to get the tables from databse
