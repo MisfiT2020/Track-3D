@@ -79,7 +79,6 @@ sudo docker compose up --build
 
 
 
-
 ## Usage
 
 - Log in to access your projects.
@@ -89,3 +88,30 @@ sudo docker compose up --build
 - View AI-generated insights and analytics.
 
 - Generate and export reports.
+
+## Permissions
+ 
+### CLI Method 
+
+- To create a account as sudo, we need to need make the sudo account from either from
+- swagger ui or edit the database.
+- To edit the database, 
+- `sqlite3 track.db` - to enter the database
+- `.tables` - to get the tables from databse
+- `.schema users` - to get the schema of the selected table
+- `SELECT * FROM users;` - returns the registered users 
+- `UPDATE users SET is_sudo = 1 WHERE userid = 225201;` - to update the `is_sudo` to 1, uses Bool
+
+### SWAGGER Method
+
+- To update from swagger ui, go to running backend port `<url>:<port>/docs#/`
+- select `sign-up` field
+```body
+{
+  "username": "misfit",
+  "email": "misfit",
+  "password": "misfit",
+  "is_sudo": true
+}
+```
+🔹 change the `is_sudo` to change the admin permission for the user when creating 
