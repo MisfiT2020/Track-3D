@@ -1,4 +1,5 @@
 python main.py &
 
-cd /frontend || exit
+cd frontend || exit
+
 npm run dev -- --host
