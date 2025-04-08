@@ -47,12 +47,12 @@ def signup(user: schemas.UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Username unavailable")
     
     hashed_password = auth.get_password_hash(user.password)
-
     new_user = models.User(
         username=user.username,
-        email=user.email,  
+        email=user.email,
         hashed_password=hashed_password,
-        userid=random.randint(100000, 999999)
+        userid=random.randint(100000, 999999),
+        is_sudo=user.is_sudo,
     )
     db.add(new_user)
     db.commit()

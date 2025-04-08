@@ -13,6 +13,7 @@ class UserCreate(BaseModel):
     username: str
     email: str 
     password: str
+    is_sudo: Optional[bool] = False
 
 class UserLogin(BaseModel):
     username: str

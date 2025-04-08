@@ -1,0 +1,4 @@
+project_id,progress_percent,materials_used,workforce,days_elapsed,days_remaining
+1,50,100,10,20,10
+2,80,150,12,15,5
+3,30,75,8,25,15
