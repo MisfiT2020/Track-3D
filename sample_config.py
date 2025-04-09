@@ -1,5 +1,5 @@
 # DataBase URL
-DATABASE_URL = "asyncpg://neondb_owner:**********@ep-late-voice-a1xby2ss-pooler.ap-southeast-1.aws.neon.tech/neondb" # replcae with original db string
+DATABASE_URL = "asyncpg://neondb_owner:***********@ep-late-voice-a1xby2ss-pooler.ap-southeast-1.aws.neon.tech/neondb" # replcae with original db string
 
 # Authentication
 SECRET_KEY = "197b2c37c391bed93fe80344fe73b806947a65e36206e05a1a23c2fa12702fe3"  
