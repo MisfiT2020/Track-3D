@@ -1,36 +1,35 @@
+import os
 import uvicorn
-import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app import models, database 
-from app.routes import users  
-from fastapi.staticfiles import StaticFiles
+from app.routes import users
+from app.database import *
+from contextlib import asynccontextmanager
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.FileHandler("log.txt"),
-        logging.StreamHandler()
-    ]
-)
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+
+
+app = FastAPI(title="Raiden API", lifespan=lifespan)
+
+origins = [
+    "*",  
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  
+    allow_headers=["*"],  
 )
-
-models.Base.metadata.create_all(bind=database.engine)
-
-app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(users.router)
 
-
-if __name__ == '__main__':
-    uvicorn.run(app, host="0.0.0.0", port=8001, log_config=None)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)

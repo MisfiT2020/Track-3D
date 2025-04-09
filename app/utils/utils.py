@@ -8,7 +8,7 @@ from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from database import *
+from app.database import AsyncSessionLocal
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
