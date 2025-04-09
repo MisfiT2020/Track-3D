@@ -8,6 +8,15 @@ AI-powered construction project analytics and forecasting platform.
 
 </div>
 
+<p align="center">
+  <strong>Serverless Build:</strong> Uses <code>Neon.tech</code>, <code>PlanetScale</code>, and <code>Supabase</code> for production-grade scalability.
+</p>
+
+<p align="center">
+  ⚠️ <em>Running on a free-tier Neon.tech server. The first API response may take up to <strong>50 seconds</strong> or more to become active due to cold start delays.</em>
+</p>
+
+
 ## Features
 
 - AI-Powered Analytics: Predict project completion dates, resource needs, and deviations.
@@ -59,6 +68,14 @@ npm install
 ## Configuration
 
 - Update the address in vite.config.ts as needed.
+
+### Frontend Environment Setup
+
+- Create a .env file inside the frontend directory and set your API base URL:
+```env
+VITE_API_BASE_URL= <replace with backend url>
+```
+> Make sure the backend server is accessible from this URL in your deployment.
 
 ### Branches / Builds
 

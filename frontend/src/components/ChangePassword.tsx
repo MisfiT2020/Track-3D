@@ -11,6 +11,8 @@ import {
   CircularProgress,
 } from '@mui/material';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const ChangePassword: React.FC = () => {
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -31,7 +33,7 @@ const ChangePassword: React.FC = () => {
     }
     try {
       const response = await axios.post(
-        '/change-password',
+        `${API_BASE_URL}/change-password`,
         { old_password: oldPassword, new_password: newPassword },
         { headers: { Authorization: `Bearer ${token}` } }
       );
