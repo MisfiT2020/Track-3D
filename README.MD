@@ -1,3 +1,5 @@
+![Track 3D](src/track3d.png)
+
 <h1 align="center"> Track 3D AI - Construction Analytics Platform </h1>
 
 <div align="center">
