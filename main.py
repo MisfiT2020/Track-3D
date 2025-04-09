@@ -14,7 +14,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="Raiden API", lifespan=lifespan)
+app = FastAPI(title="Raiden Track API", lifespan=lifespan)
 
 origins = [
     "*",  

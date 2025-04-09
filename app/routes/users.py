@@ -1,5 +1,6 @@
 from __future__ import annotations  
 import random
+import boto3
 import os, io, json
 import pandas as pd
 from PIL import Image
@@ -307,22 +308,16 @@ async def upload_profile_pic(
         raise HTTPException(status_code=400, detail="Invalid file type. Only image files are allowed.")
     
     file_extension = os.path.splitext(profile_pic.filename)[1]
-    file_name = f"profile_pic_{current_user.userid}.jpg"
     
-    upload_folder = os.path.join("static", "profile_pics")
-    os.makedirs(upload_folder, exist_ok=True)
-    file_path = os.path.join(upload_folder, file_name)
-
-    if os.path.exists(file_path):
-        os.remove(file_path)
+    file_name = f"profile_pic_{current_user.userid}.jpg"
+    s3_key = f"static/{file_name}"
     
     content = await profile_pic.read()
-
     try:
         image = Image.open(io.BytesIO(content))
     except Exception:
         raise HTTPException(status_code=400, detail="Unable to open image.")
-
+    
     if image.mode != "RGB":
         image = image.convert("RGB")
     
@@ -332,16 +327,30 @@ async def upload_profile_pic(
     image.save(buffer, format="JPEG", quality=70)
     buffer.seek(0)
     
-    with open(file_path, "wb") as f:
-        f.write(buffer.getvalue())
     
-    backend_url = config.PORT  
-    profile_pic_url = f"{backend_url}/static/profile_pics/{file_name}"
+    s3_client = boto3.client(
+        's3',
+        region_name=config.AWS_BUCKET_REGION,
+        aws_access_key_id=config.AWS_ACCESS_KEY,
+        aws_secret_access_key=config.AWS_SECRET_KEY
+    )
+    try:
+        
+        s3_client.upload_fileobj(
+            buffer,
+            config.AWS_BUCKET_NAME,
+            s3_key,
+            ExtraArgs={'ContentType': 'image/jpeg'}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error uploading file to S3: {str(e)}")
+    
+    profile_pic_url = f"{config.CLOUDFRONT_DOMAIN}{s3_key}"
     
     current_user.profile_pic = profile_pic_url
     await db.commit()
     await db.refresh(current_user)
-
+    
     return {"profile_pic": profile_pic_url}
 
 @router.get("/logs", response_model=List[str])
