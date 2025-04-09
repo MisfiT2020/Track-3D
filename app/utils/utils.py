@@ -1,9 +1,14 @@
 import math
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.orm import Session
 import google.generativeai as genai
-from app import models, auth, database  
+from app import models, auth  
+from sqlalchemy.ext.asyncio import AsyncSession
+from typing import AsyncGenerator
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+
+from database import *
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
@@ -29,14 +34,15 @@ def sanitize_nans(data):
         return None  
     return data
 
-def get_db():
-    db = database.SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    async with AsyncSessionLocal() as session:
+        yield session
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+async def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: AsyncSession = Depends(get_db),
+) -> models.User:
+    # Decode and validate token
     payload = auth.decode_token(token)
     if not payload:
         raise HTTPException(
@@ -44,7 +50,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
             detail="Invalid token",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     userid = payload.get("userid")
     if not userid:
         raise HTTPException(
@@ -53,7 +59,12 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    db_user = db.query(models.User).filter(models.User.userid == userid).first()
+    # Async DB lookup
+    result = await db.execute(
+        select(models.User).where(models.User.userid == userid)
+    )
+    db_user = result.scalars().first()
+
     if not db_user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
