@@ -2,13 +2,13 @@ import math
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 import google.generativeai as genai
-from app import models, auth  
+from api import models, auth  
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from app.database import AsyncSessionLocal
+from api.database import AsyncSessionLocal
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 

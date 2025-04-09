@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { Box, TextField, Button, Typography, Alert } from '@mui/material';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const PredictComponent: React.FC = () => {
   const [progressReport, setProgressReport] = useState('');
   const [prediction, setPrediction] = useState('');
@@ -11,7 +13,7 @@ const PredictComponent: React.FC = () => {
     setError('');
     setPrediction('');
     try {
-      const response = await axios.post("/predict", {
+      const response = await axios.post(`${API_BASE_URL}/predict`, {
         progress_report: progressReport,
       });
       setPrediction(response.data.prediction);

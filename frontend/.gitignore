@@ -24,3 +24,4 @@ static/
 *.sln
 *.sw?
 track.db
+.vercel

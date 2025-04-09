@@ -20,6 +20,8 @@ import {
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const Login: React.FC = () => {
   useAuthRedirect();
 
@@ -63,7 +65,7 @@ const Login: React.FC = () => {
 
     try {
       const response = await axios.post(
-        '/login',
+        `${API_BASE_URL}/login`,
         new URLSearchParams(formData),
         { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
       );

@@ -120,6 +120,8 @@ const popup = keyframes`
   100% { transform: scale(1); }
 `;
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const Dashboard: React.FC = () => {
   const [data, setData] = useState<ProtectedData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -143,7 +145,7 @@ const Dashboard: React.FC = () => {
   const handleAuditLogsClick = async () => {
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch('/logs', {
+      const response = await fetch(`${API_BASE_URL}/logs`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

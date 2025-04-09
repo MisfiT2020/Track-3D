@@ -33,6 +33,8 @@ interface RecentImport {
   created_at: string;
 }
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const RecentImportsPage: React.FC = () => {
   const [imports, setImports] = useState<RecentImport[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,7 +50,7 @@ const RecentImportsPage: React.FC = () => {
         return;
       }
       try {
-        const response = await axios.get('/recent-imports', {
+        const response = await axios.get(`${API_BASE_URL}/recent-imports`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setImports(response.data);

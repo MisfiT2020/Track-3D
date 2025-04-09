@@ -30,6 +30,8 @@ interface User {
   is_sudo: boolean;
 }
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const AdminPanel: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -53,7 +55,7 @@ const AdminPanel: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await axios.get(`/admin-panel-users`, {
+      const response = await axios.get(`${API_BASE_URL}/admin-panel-users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (Array.isArray(response.data)) {
@@ -91,7 +93,7 @@ const AdminPanel: React.FC = () => {
     setUpdateError('');
     try {
       const response = await axios.put(
-        `/admin-panel`,
+        `${API_BASE_URL}/admin-panel`,
         {
           userid: selectedUser.userid,
           new_password: newPassword,
@@ -128,7 +130,7 @@ const AdminPanel: React.FC = () => {
       return;
     }
     try {
-      await axios.delete(`/admin-panel/${userToDelete.userid}`, {
+      await axios.delete(`${API_BASE_URL}/admin-panel/${userToDelete.userid}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchUsers();

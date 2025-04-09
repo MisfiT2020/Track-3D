@@ -22,6 +22,8 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const Profile: React.FC = () => {
   const [profilePic, setProfilePic] = useState<string>('/static/images/avatar/1.jpg');
   const [profilePicFile, setProfilePicFile] = useState<File | null>(null);
@@ -43,7 +45,7 @@ const Profile: React.FC = () => {
         return;
       }
       try {
-        const response = await axios.get('/protected', {
+        const response = await axios.get(`${API_BASE_URL}/protected`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setData(response.data);
@@ -84,7 +86,7 @@ const Profile: React.FC = () => {
     try {
       const formData = new FormData();
       formData.append('profile_pic', profilePicFile);
-      await axios.post('/upload-profile-pic', formData, {
+      await axios.post(`${API_BASE_URL}/upload-profile-pic`, formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUploadPicSuccess('Profile picture updated successfully');
@@ -111,7 +113,7 @@ const Profile: React.FC = () => {
     if (!token) return navigate('/');
     try {
       const response = await axios.put(
-        '/change-username',
+        `${API_BASE_URL}/change-username`,
         { new_username: newUsername },
         { headers: { Authorization: `Bearer ${token}` } }
       );

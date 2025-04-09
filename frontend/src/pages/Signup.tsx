@@ -16,6 +16,8 @@ import {
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const Signup: React.FC = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState(''); 
@@ -73,7 +75,7 @@ const Signup: React.FC = () => {
     }
 
     try {
-      await axios.post('/sign-up', { username, email, password });
+      await axios.post(`${API_BASE_URL}/sign-up`, { username, email, password });
       navigate('/', { state: { accountCreated: true } });
     } catch (err: any) {
       console.error(err);

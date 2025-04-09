@@ -1,9 +1,8 @@
-import os
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import users
-from app.database import *
+from api.routes import users
+from api.database import *
 from contextlib import asynccontextmanager
 
 
@@ -17,7 +16,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Raiden Track API", lifespan=lifespan)
 
 origins = [
-    "*",  
+    "https://track-3d-hnjf9lieh-misfit-s-projects-03a72051.vercel.app",  
 ]
 
 app.add_middleware(
@@ -31,5 +30,4 @@ app.add_middleware(
 app.include_router(users.router)
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

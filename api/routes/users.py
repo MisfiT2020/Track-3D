@@ -13,9 +13,9 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app import schemas, models, auth
+from api import schemas, models, auth
 
-from app.utils.utils import *
+from api.utils.utils import *
 
 import config
 
