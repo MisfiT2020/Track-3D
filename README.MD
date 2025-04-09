@@ -35,6 +35,8 @@ AI-powered construction project analytics and forecasting platform.
    
    - Docker
 
+   - Amazon S3 Bucket
+ 
 ## Setup
 
 ### Clone the repository
@@ -42,6 +44,7 @@ AI-powered construction project analytics and forecasting platform.
 git clone https://github.com/MisfiT2020/Track-3D.git
 cd Track-3D
 ```
+
 ### Install backend dependencies
 ```cd backend
 pip install -r requirements.txt
