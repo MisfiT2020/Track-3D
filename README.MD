@@ -1,3 +1,5 @@
+![Track 3D](src/track3d.png)
+
 <h1 align="center"> Track 3D AI - Construction Analytics Platform </h1>
 
 <div align="center">
@@ -55,6 +57,19 @@ npm install
 
 - Update the address in vite.config.ts as needed.
 
+### Branches / Builds
+
+This project supports **two types of database builds**, each maintained under separate branches:
+
+- **Main Branch (`main`)** – Uses a **serverless/hosted database** (e.g., Supabase, PlanetScale) for production-ready, scalable deployment.
+- **Static DB Branch (`static-db`)** – Uses a **local SQLite DB** for quick setup, development, and offline demos.
+
+> Switch to the branch that suits your use case:
+```bash
+git checkout main        # For hosted serverless DB  
+git checkout static-db   # For local static SQLite DB
+```
+
 ## Run the Application
 
 ### Start the application using Docker
@@ -93,18 +108,21 @@ sudo docker compose up --build
 
 - Generate and export reports.
 
+
+## Default Credentials (Admin Demo Account)
+
+```body
+Username: misfit  
+Password: misfit
+```
+> Normally, when signing-up from site, requires normal password requirements. > but it's a demo. so, makin it easier to login.
+
+
 ## Permissions
  
 ### CLI Method 
 
-- To update a account as sudo, we need to need make the sudo account from either from
-- *swagger ui* or edit the *database*.
-- To edit the database, 
-- `sqlite3 track.db` - to enter the database
-- `.tables` - to get the tables from databse
-- `.schema users` - to get the schema of the selected table
-- `SELECT * FROM users;` - returns the registered users 
-- `UPDATE users SET is_sudo = 1 WHERE userid = 225201;` - to update the `is_sudo` to 1, uses Bool
+- To update a account as sudo, we need to need make the sudo account from **swagger ui**
 
 ### SWAGGER Method
 

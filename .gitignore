@@ -2,7 +2,7 @@ track.db
 .env
 log.txt
 trackk.db
-
+config.py
 
 node_modules/
 static/

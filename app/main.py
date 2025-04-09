@@ -6,6 +6,7 @@ from api.routes import users
 from api.database import *
 from contextlib import asynccontextmanager
 import logging
+import config
 
 logging.basicConfig(
     level=logging.INFO,
@@ -25,13 +26,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Raiden Track API", lifespan=lifespan)
 
-origins = [
-    "https://track-3d-hnjf9lieh-misfit-s-projects-03a72051.vercel.app",  
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=config.ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],  
     allow_headers=["*"],  
@@ -40,4 +37,4 @@ app.add_middleware(
 app.include_router(users.router)
 
 if __name__ == '__main__':
-    uvicorn.run(app, host="0.0.0.0", port=8001, log_config=None)
+    uvicorn.run(app, host="0.0.0.0", port=config.PORT, log_config=None)
