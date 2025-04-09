@@ -24,8 +24,7 @@ class User(Base):
     is_sudo: Mapped[bool] = mapped_column(Boolean, default=False)
     profile_pic: Mapped[str] = mapped_column(String, default="/static/images/avatar/1.jpg")
     joined_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-
-    # Using postponed evaluation of annotations (forward references) for RecentImport
+    
     recent_imports: Mapped[List[RecentImport]] = relationship(
         "RecentImport",
         back_populates="user",

@@ -42,7 +42,6 @@ async def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: AsyncSession = Depends(get_db),
 ) -> models.User:
-    # Decode and validate token
     payload = auth.decode_token(token)
     if not payload:
         raise HTTPException(
@@ -59,7 +58,7 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # Async DB lookup
+    
     result = await db.execute(
         select(models.User).where(models.User.userid == userid)
     )
