@@ -160,7 +160,7 @@ const RecentImportsPage: React.FC = () => {
             <Tooltip title="Change Password" placement="left" arrow>
               <Fab
                 sx={{ background: 'linear-gradient(45deg, #FF9800 0%, #FFC107 100%)' }}
-                onClick={() => navigate('/change-password')}
+                onClick={() => navigate('/changepassword')}
                 aria-label="change password"
               >
                 <LockIcon sx={{ color: 'white', fontSize: '1.5rem' }} />

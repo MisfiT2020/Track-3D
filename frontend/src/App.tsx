@@ -24,7 +24,7 @@ const App: React.FC = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/sudo-panel" element={<AdminPanelUsers />} />      
-          <Route path="/cpassword" element={<ChangePassword />} />      
+          <Route path="/changepassword" element={<ChangePassword />} />      
           <Route path="/predict" element={<PredictComponent />} />      
           <Route path="/import-report" element={<ImportReport />} />
           <Route path="/recents" element={<RecentImportsPage />} />

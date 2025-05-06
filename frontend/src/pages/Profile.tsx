@@ -262,7 +262,7 @@ const Profile: React.FC = () => {
               variant="outlined"
               startIcon={<LockReset />}
               sx={{ mb: 2 }}
-              onClick={() => navigate('/change-password')}
+              onClick={() => navigate('/changepassword')}
             >
               Change Password
             </Button>

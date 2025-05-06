@@ -380,7 +380,7 @@ const Dashboard: React.FC = () => {
                     boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
                   },
                 }}
-                onClick={() => navigate('/change-password')}
+                onClick={() => navigate('/changepassword')}
                 aria-label="change password"
               >
                 <LockIcon sx={{ color: 'white', fontSize: '1.5rem' }} />
